@@ -33,3 +33,24 @@
 - Python 3.10+
 - Git
 - 可选：Docker
+
+## 设计说明
+
+- 先做单体应用，不拆微服务。
+- 先用 SQLite，方便本地运行，后续可以换 PostgreSQL。
+- API 层负责处理 HTTP 请求和响应。
+- Service 层负责业务逻辑。
+- Repository 层负责数据库操作。
+
+## 架构决策记录
+
+- ADR-001：为什么先用 SQLite？
+- ADR-002：为什么先做单体，不拆微服务？
+
+## 学习记录
+
+- 2026-09-21：创建仓库，完成第一版 README。
+
+## 下载的依赖
+
+- pip install fastapi uvicorn
