@@ -54,3 +54,22 @@
 ## 下载的依赖
 
 - pip install fastapi uvicorn
+
+## 运行测试
+
+```bash
+pytest
+
+## 数据库
+
+项目使用 SQLite + SQLAlchemy。
+
+数据库文件 `tasks.db` 在项目根目录，首次启动自动创建。
+
+表结构：
+
+- tasks
+  - id: INTEGER, 主键
+  - title: VARCHAR(255), 非空
+  - description: TEXT
+  - done: BOOLEAN

@@ -1,51 +1,68 @@
+from sqlalchemy import select
+
+from app.database import SessionLocal
+from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 
 class TaskRepository:
-    def __init__(self):
-        self.tasks = []
-        self.next_id = 1
+    # def __init__(self):
+    #     self.tasks = []
+    #     self.next_id = 1
 
     def list_tasks(self, done: bool | None = None):
-        if done is None:
-            return self.tasks
-        return [task for task in self.tasks if task["done"] == done]
+        with SessionLocal() as session:
+            stmt = select(Task)
+            if done is not None:
+                stmt = stmt.where(Task.done == done)
+            tasks = session.scalars(stmt).all()
+            return [self._to_dict(task) for task in tasks]
 
     def get_task(self, task_id: int):
-        for task in self.tasks:
-            if task["id"] == task_id:
-                return task
-        return None
+        with SessionLocal() as session:
+            task = session.get(Task, task_id)
+            return self._to_dict(task) if task else None
 
     def create_task(self, data: TaskCreate):
-        task = {
-            "id": self.next_id,
-            "title": data.title,
-            "description": data.description,
-            "done": False,
-        }
-        self.tasks.append(task)
-        self.next_id += 1
-        return task
-
+        with SessionLocal() as session:
+            task = Task(title=data.title, description=data.description, done=False)
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+            return self._to_dict(task)
+        
     def update_task(self, task_id: int, data: TaskUpdate):
-        task = self.get_task(task_id)
-        if task is None:
-            return None
-        if data.title is not None:
-            task["title"] = data.title
-        if data.description is not None:
-            task["description"] = data.description
-        if data.done is not None:
-            task["done"] = data.done
-        return task
+        with SessionLocal() as session:
+            task = session.get(Task, task_id)
+            if not task:
+                return None
+            if data.title is not None:
+                task.title = data.title
+            if data.description is not None:
+                task.description = data.description
+            if data.done is not None:
+                task.done = data.done
+            session.commit()
+            session.refresh(task)
+            return self._to_dict(task)
 
     def delete_task(self, task_id: int):
-        task = self.get_task(task_id)
-        if task is None:
-            return False
-        self.tasks.remove(task)
-        return True
+        with SessionLocal() as session:
+            task = session.get(Task, task_id)
+            if not task:
+                return False
+            session.delete(task)
+            session.commit()
+            return True
 
+
+    @staticmethod
+    def _to_dict(task: Task):
+        return {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "done": task.done,
+        }
 
 # 全项目共享的唯一仓储实例：create / list / update 都读写同一份 tasks
 task_repository = TaskRepository()
