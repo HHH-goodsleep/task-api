@@ -14,3 +14,11 @@ class TaskResponse(BaseModel):
     title: str
     description: str
     done: bool
+
+class TaskListResponse(BaseModel):
+    items: list[TaskResponse]
+    total: int
+    limit: int
+    offset: int
+
+    

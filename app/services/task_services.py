@@ -4,8 +4,15 @@ from app.repositories.TaskRepository import task_repository
 from app.schemas.task import TaskCreate, TaskUpdate
 
 class TaskService:
-    def list_tasks(self, done: bool | None = None):
-        return task_repository.list_tasks(done)
+    def list_tasks(self, done: bool | None = None, limit: int = 10, offset: int = 0):
+        items = task_repository.list_tasks(done, limit, offset)
+        total = task_repository.count_tasks(done)
+        return {
+            "items": items,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
 
     def get_task(self, task_id: int):
         task = task_repository.get_task(task_id)

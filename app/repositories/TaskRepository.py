@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.database import SessionLocal
 from app.models.task import Task
@@ -9,14 +9,22 @@ class TaskRepository:
     #     self.tasks = []
     #     self.next_id = 1
 
-    def list_tasks(self, done: bool | None = None):
+    def list_tasks(self, done: bool | None = None, limit:int = 10, offset:int = 0):
         with SessionLocal() as session:
             stmt = select(Task)
             if done is not None:
                 stmt = stmt.where(Task.done == done)
+            stmt = stmt.limit(limit).offset(offset)
             tasks = session.scalars(stmt).all()
             return [self._to_dict(task) for task in tasks]
 
+    def count_tasks(self, done: bool | None = None):
+        with SessionLocal() as session:
+            stmt = select(func.count()).select_from(Task)
+            if done is not None:
+                stmt = stmt.where(Task.done == done)
+            return session.scalar(stmt)
+        
     def get_task(self, task_id: int):
         with SessionLocal() as session:
             task = session.get(Task, task_id)
